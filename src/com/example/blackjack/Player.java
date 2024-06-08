@@ -6,10 +6,16 @@ import java.util.List;
 public class Player {
     protected List<Card> hand;
     private int score; // 總積分
+    private int id;
 
-    public Player() {
+    public Player(int id) {
         hand = new ArrayList<>();
         score = 10;
+        this.id = id;
+    }
+
+    public int getId(){
+        return id;
     }
 
     public void receiveCard(Card card) {

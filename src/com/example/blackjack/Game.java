@@ -12,7 +12,7 @@ public class Game {
     public Game() {
         deck = new Deck();
         players = new ArrayList<>();
-        dealer = new Dealer();
+        dealer = new Dealer(0);
     }
 
     public void startGame() {
@@ -35,7 +35,7 @@ public class Game {
         }
     	
     	for (int i = 0; i < numPlayers; i++) {
-            players.add(new Player());
+            players.add(new Player(i+1));
         }
     	
         boolean keepPlaying = true;
