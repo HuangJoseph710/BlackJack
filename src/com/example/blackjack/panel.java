@@ -39,6 +39,7 @@ class DealerPanel extends JPanel {
         this.dealer = dealer;
         setLayout(new BorderLayout());
         valueLabel = new JLabel("點數: " + dealer.calculateValue(), SwingConstants.CENTER);
+        valueLabel.setFont(new Font(valueLabel.getFont().getName(), Font.PLAIN, 18));
         handLabel = new JLabel("手牌: " + dealer.getHand().toString());
         add(handLabel, BorderLayout.CENTER);
         add(valueLabel, BorderLayout.NORTH);
