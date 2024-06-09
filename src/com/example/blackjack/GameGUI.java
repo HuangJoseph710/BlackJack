@@ -9,7 +9,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlackjackGameGUI extends JFrame {
+public class GameGUI extends JFrame {
     private JPanel mainContainerPanel;
     private JPanel mainPanel;
     private JPanel scorePanel;
@@ -22,9 +22,9 @@ public class BlackjackGameGUI extends JFrame {
     private Dealer dealer;
     private List<Player> players;
     private Deck deck;
-    private int currentPlayerIndex;
+    public static int currentPlayerIndex;
 
-    public BlackjackGameGUI(int numPlayers) {
+    public GameGUI(int numPlayers) {
         // 設置主框架
         setTitle("Blackjack Game");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -32,10 +32,16 @@ public class BlackjackGameGUI extends JFrame {
 
         // 初始化三大區塊
         mainContainerPanel = new JPanel(new BorderLayout());
-        scorePanel = new JPanel(new GridLayout(numPlayers + 1, 1));
+
+        scorePanel = new JPanel(new GridLayout(numPlayers + 3, 1)); // 其實只需要(numPlayers+2)個rows，但為了牌版好看改成+3
+        scorePanel.setBorder(new EmptyBorder(10, 15, 10, 20)); // 設置padding
+        scorePanel.setOpaque(true); // 設置區塊透明
+
+        // 初始化並添加LogTextArea到ScrollPane
         logTextArea = new JTextArea(10, 50);
-        logTextArea.setBorder(new EmptyBorder(-10, 10, 10, 10)); // 設置padding
+        logTextArea.setBorder(new EmptyBorder(-10, 10, 10, 10)); 
         logTextArea.setEditable(false);
+        logTextArea.setFont(new Font(logTextArea.getFont().getName(), Font.PLAIN, 14));
         JScrollPane logScrollPane = new JScrollPane(logTextArea);
         
 
@@ -45,15 +51,25 @@ public class BlackjackGameGUI extends JFrame {
         add(logScrollPane, BorderLayout.SOUTH);
 
         // 初始化玩家和莊家
-        dealer = new Dealer(0);
+        dealer = new Dealer(numPlayers); // 莊家的id 設為最後一位玩家
         players = new ArrayList<>();
         for (int i = 0; i < numPlayers; i++) {
-            players.add(new Player(i+1));
+            players.add(new Player(i)); // 第一位玩家id為0，也代表遊戲由 "id為0者" 開始
         }
         deck = new Deck();
 
         // 初始化並添加PlayerPanels和DealerPanel到mainPanel
-        mainPanel = new JPanel(new GridLayout(1, numPlayers + 1));
+        mainPanel = new JPanel(new GridLayout(1, (numPlayers + 1), 10, 5)){
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                ImageIcon icon = new ImageIcon("src\\com\\example\\blackjack\\assets\\background.png"); // 替換成你實際的圖片路徑
+                Image img = icon.getImage();
+                g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
         dealerPanel = new DealerPanel(dealer);
         mainPanel.add(dealerPanel);
 
@@ -63,6 +79,11 @@ public class BlackjackGameGUI extends JFrame {
             playerPanels.add(playerPanel);
             mainPanel.add(playerPanel);
         }
+
+        JLabel scoreTitle = new JLabel("玩家分數", SwingConstants.CENTER);
+        scoreTitle.setFont(new Font(scoreTitle.getFont().getName(), Font.BOLD, 20));
+        scoreTitle.setBorder(new EmptyBorder(-10, 20, -30, 20));
+        scorePanel.add(scoreTitle);
 
         // 初始化並添加ScorePanels到scorePanel
         scorePanels = new ArrayList<>();
@@ -113,7 +134,7 @@ public class BlackjackGameGUI extends JFrame {
 
         pack();
         // setLocationRelativeTo(null); // 窗口居中
-        setSize(1000, 600); // 設置窗口初始大小，寬度800，高度600
+        setSize(1300, 750); // 設置窗口初始大小，寬度800，高度600
         setVisible(true);
 
         // 開始遊戲
@@ -135,24 +156,24 @@ public class BlackjackGameGUI extends JFrame {
             player.receiveCard(deck.dealCard());
         }
         dealer.receiveCard(deck.dealCard());
+        dealer.receiveCard(deck.dealCard());
 
         updatePlayerPanels();
-        updateScorePanel(); //這裡應該不用也沒問題
     }
 
-    // 更新玩家手牌面板
+    // 更新所有玩家手牌面板
     private void updatePlayerPanels() {
         for (PlayerPanel playerPanel : playerPanels) {
             playerPanel.updatePanel();
         }
-        dealerPanel.updatePanel(); //TODO: 更新莊家的面板，"莊家第二張牌一開始是蓋住的"這個功能還沒做
+        dealerPanel.updatePanel();
     }
 
     // 更新得分板
     public void updateScorePanel() {
         scorePanels.get(0).updateScore(dealer.getScore());
         for (int i = 0; i < scorePanels.size()-1; i++) {
-            scorePanels.get(i).updateScore(players.get(i).getScore());
+            scorePanels.get(i+1).updateScore(players.get(i).getScore());
         }
     }
 
@@ -166,6 +187,7 @@ public class BlackjackGameGUI extends JFrame {
     private void hit() {
         Player currentPlayer = players.get(currentPlayerIndex);
         currentPlayer.receiveCard(deck.dealCard());
+        log("玩家 " + (currentPlayerIndex + 1) + " 選擇加牌。");
         updatePlayerPanels();
 
         if (currentPlayer.calculateValue() > 21) {
@@ -176,12 +198,22 @@ public class BlackjackGameGUI extends JFrame {
 
     // 玩家選擇停牌
     private void stand() {
+        log("玩家 " + (currentPlayerIndex + 1) + " 選擇停牌。");
         nextPlayer();
     }
 
     // 切換到下一個玩家
     private void nextPlayer() {
+        JPanel currentCardPanel = playerPanels.get(currentPlayerIndex).getCardPanel();
+        currentCardPanel.setOpaque(false); // 把目前玩家的cardPanel變成透明
+        currentCardPanel.repaint(); // 強制重繪面板
+
+        // 將cardPanel改成不透明
+
+
+        
         currentPlayerIndex++;
+        updatePlayerPanels();
         if (currentPlayerIndex < players.size()) {
             updatePlayerTurn();
         } else {
@@ -191,15 +223,22 @@ public class BlackjackGameGUI extends JFrame {
 
     // 更新當前玩家的回合
     private void updatePlayerTurn() {
-        log("輪到玩家 " + (currentPlayerIndex + 1) + " 的回合。");
+        log("\n輪到玩家 " + (currentPlayerIndex + 1) + " 的回合。");
+
+        JPanel currentCardPanel = playerPanels.get(currentPlayerIndex).getCardPanel();
+        currentCardPanel.setOpaque(true); // 把目前玩家的cardPanel變成透明
+        currentCardPanel.repaint(); // 強制重繪面板 :用來解決渲染不完全的問題
     }
 
     // 莊家回合
     private void dealerTurn() {
-        while (dealer.shouldHit()) {
-            dealer.receiveCard(deck.dealCard());
-        }
+        log("\n輪到莊家開牌。");
         updatePlayerPanels();
+        while (dealer.shouldHit()) {
+            log("莊家牌點未滿17，將再補一張牌。");
+            dealer.receiveCard(deck.dealCard());
+            updatePlayerPanels();
+        }
         log("莊家回合結束。\n");
         determineWinners();
         promptNextRound();
@@ -315,7 +354,7 @@ public class BlackjackGameGUI extends JFrame {
             }
 
             // 創建並顯示BlackjackGameGUI
-            new BlackjackGameGUI(numberOfPlayers);
+            new GameGUI(numberOfPlayers);
         });
     }
 }

@@ -6,7 +6,7 @@ import java.util.List;
 public class Player {
     protected List<Card> hand;
     private int score; // 總積分
-    private int id;
+    private int id; // ID 除了"識別用途"以外，也代表遊玩的順序
 
     public Player(int id) {
         hand = new ArrayList<>();

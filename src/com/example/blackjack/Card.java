@@ -57,6 +57,6 @@ public class Card {
 
     @Override
     public String toString() {
-        return suit + "-" + rank.getNum();
+        return suit + "/" + rank.getNum();
     }
 }
