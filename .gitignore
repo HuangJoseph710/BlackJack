@@ -1,27 +1,30 @@
-# 忽略編譯產生的文件
+# 編譯產生的文件
 /bin
 /target
 /build
 
-# 忽略 IDE 設定檔案
+# IDE 設定檔案
 /.settings
 /.project
 /.classpath
 /.idea
 *.iml
 
-# 忽略操作系統生成的文件
+# 操作系統生成的文件
 .DS_Store
 Thumbs.db
 
 # 忽略日誌文件
 *.log
 
-# 忽略虛擬機器錯誤日誌
+# 虛擬機器錯誤日誌
 hs_err_pid*
 
-# 忽略包文件
+# 包文件
 *.jar
 *.war
 *.ear
 
+# 壓縮檔
+*.zip
+*.rar
